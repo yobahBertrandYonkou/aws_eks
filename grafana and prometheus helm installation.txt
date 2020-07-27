@@ -1,0 +1,14 @@
+INSTALLATION OF PROMETHEUS
+
+kubectl create namespace prometheus
+helm install  stable/prometheus     --namespace prometheus     --set alertmanager.persistentVolume.storageClass="gp2"     --set server.persistentVolume.storageClass="gp2"
+
+PORT-FORWARDING FOR PROMETHEUS
+kubectl -n prometheus  port-forward svc/terrifc-pug-prometheus-server  8888:80
+
+INSTALLATION OF GRAFANA
+
+helm install stable/grafana  --namespace grafana     --set persistence.storageClassName="gp2" --set adminPassword='GrafanaAdm!n'    --set datasources."datasources\.yaml".apiVersion=1     --set datasources."datasources\.yaml".datasources[0].name=Prometheus   --set datasources."datasources\.yaml".datasources[0].type=prometheus    --set datasources."datasources\.yaml".datasources[0].url=http://prometheus-server.prometheus.svc.cluster.local   --set datasources."datasources\.yaml".datasources[0].access=proxy     --set datasources."datasources\.yaml".datasources[0].isDefault=true  --set service.type=LoadBalancer
+
+username: admin
+password: 'GrafanaAdm!n' (including the quotes)
