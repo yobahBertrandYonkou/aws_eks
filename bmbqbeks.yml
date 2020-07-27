@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: db
+
+spec:
+  selector:
+    matchLabels:
+      app: bmbapp
+      tier: backend
+  template:
+    metadata:
+      name: bmbqb
+      labels:
+        app: bmbapp
+        tier: backend
+
+    spec:
+      volumes:
+        - name: bmbqb-vol
+          persistentVolumeClaim:
+            claimName: efs-bmbqb
+      containers:
+        - name: bmbqb
+          image: bmbvfx/bmbqb:1.0
+          volumeMounts:
+            - name: bmbqb-vol
+              mountPath: /var/lib/mysql
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                   name: bmbqb-secret
+                   key: rootpassword
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bmbqb-svc
+spec:
+  selector:
+     app: bmbapp
+     tier: backend
+  ports:
+   - port: 3306
+  type: ClusterIP
