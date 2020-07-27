@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fe
+
+spec:
+  selector:
+    matchLabels:
+      app: bmbapp
+      tier: frontend
+  template:
+    metadata:
+      name: bmbqs
+      labels:
+        app: bmbapp
+        tier: frontend
+    spec:
+      volumes:
+        - name: bmbqs-vol
+          persistentVolumeClaim:
+            claimName: efs-bmbqs
+      containers:
+        - name: bmbqs
+          image: bmbvfx/bmbqs:1.0
+          volumeMounts:
+            - name: bmbqs-vol
+              mountPath: /var/www/html
+          env:
+            - name: DATABASE
+              value: QUESTIONS
+            - name: MYSQL_USER
+              value: root
+            - name: QUEST_DB_HOST
+              value: bmbqb-svc
+            - name: MYSQL_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: bmbqb-secret
+                  key: rootpassword
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bmbqs-svc
+
+spec:
+  selector:
+    app: bmbapp
+    tier: frontend
+  type: LoadBalancer
+  ports:
+    - port: 80
